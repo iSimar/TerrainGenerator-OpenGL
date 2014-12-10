@@ -1,3 +1,3 @@
 TerrainGenerator-OpenGL
 =======================
-![demo](http://giant.gfycat.com/PointlessWarpedGreatwhiteshark.gif)
+![alt tag](http://giant.gfycat.com/PointlessWarpedGreatwhiteshark.gif)
