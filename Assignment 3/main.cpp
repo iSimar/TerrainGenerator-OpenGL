@@ -43,14 +43,15 @@ float pos[] = {0,1,0};
 float camPos[] = {80, 130, 80};
 float angle = 0.0f;
 
-// terrain size variables
+// terrain size variables and default for when program is first loaded
 int terrainSizeX = 100;
 int terrainSizeZ = 100;
-int terrainIterations = ((terrainSizeX+terrainSizeZ)/2)*3;
+//Value never changes and as such will always iterate 300 times regardless of the new size ((100+100)/2*)3 = 300
+int terrainIterations = ((terrainSizeX+terrainSizeZ)/2)*3; 
 
 //intial mode options state
 int wireFrameMode = ON;
-int cirlceMode = OFF;
+int cirlceMode = OFF;          //circle is misspelled and used as such through the code
 int lightingMode = ON;
 int colorMode = OFF;
 int flatShadingMode = OFF;
@@ -170,8 +171,11 @@ void keyboard(unsigned char key, int x, int y){
             break;
             
     }
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
+    //openGL operates matrix operations by matrix made, MODELVIEW means changes to the model
+    //this is done to allow for updating the position of the lights if they were changed by key presses
+    //changing the mode ensures that only the light is changed and is updated relative to the identity 
+    glMatrixMode(GL_MODELVIEW); 
+    glPushMatrix(); 
     glLoadIdentity();
     glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
     glLightfv(GL_LIGHT1, GL_POSITION, light_pos2);
@@ -184,15 +188,15 @@ void special(int key, int x, int y){
     /* arrow key presses move the camera */
     switch(key)
     {
-            //left keypress, translate left on the x axis
+            //left keypress, translate left on the z axis
         case GLUT_KEY_LEFT:
             camPos[2] +=  2;
             break;
-            //right keypress, translate right on the x axis
+            //right keypress, translate right on the z axis
         case GLUT_KEY_RIGHT:
             camPos[2] -= 2;
             break;
-            //up keypress, translate back on the z axis
+            //up keypress, translate back on the y axis
         case GLUT_KEY_UP:
             if (camPos[1]<0){
                 flipTerrainMode = OFF;
@@ -206,8 +210,10 @@ void special(int key, int x, int y){
                 camPos[1] += 2;
             }
             break;
-            //down keypress, translate up on the z axis
+            //down keypress, translate up on the y axis
         case GLUT_KEY_DOWN:
+            //check to see if the camera has gone below the y plane
+            //if so flip the orentation and direction of the camera so that it stays above the y plane 
             if (camPos[1]<0){
                 flipTerrainMode = ON;
                 camPos[0]*=-1;
@@ -220,11 +226,11 @@ void special(int key, int x, int y){
                 camPos[1] += 2;
             }
             break;
-            
+            //home keypress, translate left on the x axis
         case GLUT_KEY_HOME:
             camPos[0] += 2;
             break;
-            
+            //end keypress, translate right on the x axis
         case GLUT_KEY_END:
             camPos[0] -= 2;
             break;
@@ -236,7 +242,8 @@ void special(int key, int x, int y){
  * includes different sizes of terrains
  */
 void menu(int op) {
-    
+    //number of iterations does not vary with terrain size changes so more extreme terrain can be seen on small size
+    //large size should update the number of iterations as before so they aren't as spare with terrain
     switch(op) {
         case 'a':
             terrainSizeX = 50;
@@ -290,7 +297,7 @@ void display(void){
     glutSwapBuffers();
 }
 
-/* method for intializing the terrain setup */
+/* method for intializing the terrain by clearing and enabling settings */
 void init(void){
     glClearColor(0, 0, 0, 0);
     glColor3f(1, 1, 1);
@@ -317,8 +324,9 @@ void init(void){
     
 }
 
-/* instructions method prints out control key functions for user */
+/* instructions method prints out control key functions for user at the start of the program to console */
 void instructions(void){
+    //Instructions are missing HOME and END keys that are coded in but not told to user.
     printf("=======================================================\n");
     printf("Terrain Generator\n\nBy\nSimarpreet Singh(1216728)\n and Birunthaa Umamahesan(1203142)\n");
     printf("=======================================================\n");
@@ -355,29 +363,30 @@ int main(int argc, char ** argv){
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     
     
-    glutInitWindowSize(800, 800);
-    glutInitWindowPosition(100, 100);
+    glutInitWindowSize(800, 800); //create the window size at launch
+    glutInitWindowPosition(100, 100); //set the window position on the monitor at launch
     
-    glutCreateWindow("Assignment 3: Terrain Mesh");	//creates the window
+    glutCreateWindow("Assignment 3: Terrain Mesh");	//creates the window and the name
     
     glutDisplayFunc(display);	//registers "display" as the display callback function
-    glutKeyboardFunc(keyboard);
-    glutSpecialFunc(special);
+    glutKeyboardFunc(keyboard); //assign the keyboard function to glut
+    glutSpecialFunc(special); //assign the special keys function to glut
     
     glEnable(GL_DEPTH_TEST);
     
     
-    instructions();                 //call instructions menu
+    instructions();                 //call instructions menu to print
     
     init();                         //intial method
     
     /* set up a simple menu, which will be handled by menuProc */
+    //provide descriptive text to the user and match the cases to the ones define in menu
     glutCreateMenu(menu);
     glutAddMenuEntry("50 x 50", 'a');
     glutAddMenuEntry("100 x 100", 'b');
     glutAddMenuEntry("150 x 150", 'c');
     glutAddMenuEntry("300 x 300", 'd');
-    glutAttachMenu(GLUT_RIGHT_BUTTON);
+    glutAttachMenu(GLUT_RIGHT_BUTTON); //assign the menu to be accessible by rightclicking
     
     glutMainLoop();				//starts the event loop
     
